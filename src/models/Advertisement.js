@@ -27,11 +27,11 @@ const advertisementSchema = new Schema({
   tags: {
     type: [String],
   },
-  tisDeletedags: {
+  isDeleted: {
     type: Boolean,
     required: true,
   },
 
 });
 
-module.exports = model('Aavertisement', advertisementSchema);
+module.exports = model('Advertisement', advertisementSchema);
