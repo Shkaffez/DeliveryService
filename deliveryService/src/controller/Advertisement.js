@@ -1,0 +1,84 @@
+const mongoose = require('mongoose');
+const Advertisement = require('../models/Advertisement');
+const mongoErrorHandler = require('../utils/mongoErrorHandler');
+const User = require('../models/User');
+
+const AdvertisementModule = {
+  async find(params) {
+    if (params) {
+      const {
+        shortText = '',
+        description = '',
+        userId = null,
+        tags = [],
+      } = params;
+      try {
+        return await Advertisement.find({
+          isDeleted: false,
+          shortText: { $regex: shortText },
+          description: { $regex: description },
+          userId,
+          tags: { $all: tags },
+        }).select('-__v');
+      } catch (err) {
+        console.log(err);
+        return null;
+      }
+    }
+    return await Advertisement.find().select('-__v');
+  },
+  async create(data) {
+    const {
+      shortText,
+      description,
+      images,
+      userId,
+      createdAt,
+      updatedAt,
+      tags,
+    } = data;
+    const _id = mongoose.Types.ObjectId();
+    const newAdvertisement = new Advertisement({
+      _id,
+      shortText,
+      description,
+      images,
+      userId,
+      createdAt,
+      updatedAt,
+      tags,
+    });
+    try {
+      await newAdvertisement.save();
+      const adv = await Advertisement.findById(_id);
+      const name = await User.findById(adv.userId);
+      return {
+        id: adv._id,
+        shortText: adv.shortText,
+        description: adv.description,
+        images: adv.images,
+        user: {
+          id: adv.userId,
+          name: name.name,
+        },
+        createdAt: adv.createdAt,
+      };
+    } catch (err) {
+      console.log(err);
+      return mongoErrorHandler(err);
+    }
+  },
+  async remove(id, user) {
+    const adv = await Advertisement.findById(id);
+    // eslint-disable-next-line eqeqeq
+    if (adv.userId.equals(user._id)) {
+      await Advertisement.findByIdAndUpdate(id,
+        { isDeleted: true },
+        { updatedAt: new Date() });
+      return { delete: 'success' };
+    }
+    throw new Error('you are not auhor of this advertisement');
+  },
+};
+
+module.exports = AdvertisementModule;

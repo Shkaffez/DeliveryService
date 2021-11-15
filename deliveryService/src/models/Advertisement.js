@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema, model } = require('mongoose');
 
 const advertisementSchema = new Schema({
-  emshortTextail: {
+  shortText: {
     type: String,
     required: true,
   },
@@ -30,6 +30,7 @@ const advertisementSchema = new Schema({
   isDeleted: {
     type: Boolean,
     required: true,
+    default: false,
   },
 
 });
