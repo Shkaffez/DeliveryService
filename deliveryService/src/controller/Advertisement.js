@@ -5,27 +5,35 @@ const User = require('../models/User');
 
 const AdvertisementModule = {
   async find(params) {
-    if (params) {
-      const {
-        shortText = '',
-        description = '',
-        userId = null,
-        tags = [],
-      } = params;
-      try {
-        return await Advertisement.find({
-          isDeleted: false,
-          shortText: { $regex: shortText },
-          description: { $regex: description },
-          userId,
-          tags: { $all: tags },
-        }).select('-__v');
-      } catch (err) {
-        console.log(err);
-        return null;
-      }
+    const {
+      shortText,
+      description,
+      userId,
+      tags,
+    } = params;
+    let filters;
+    if (shortText) {
+      filters.shortText = { $regex: shortText };
     }
-    return await Advertisement.find().select('-__v');
+    if (description) {
+      filters.description = { $regex: description };
+    }
+    if (userId) {
+      filters.userId = userId;
+    }
+    if (tags && tags.length) {
+      filters.tags = tags;
+    }
+
+    try {
+      return await Advertisement.find({
+        isDeleted: false,
+        ...filters,
+      }).select('-__v');
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   },
   async create(data) {
     const {
@@ -70,7 +78,7 @@ const AdvertisementModule = {
   },
   async remove(id, user) {
     const adv = await Advertisement.findById(id);
-    // eslint-disable-next-line eqeqeq
+    // eslint-disable-next-line
     if (adv.userId.equals(user._id)) {
       await Advertisement.findByIdAndUpdate(id,
         { isDeleted: true },

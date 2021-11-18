@@ -3,8 +3,12 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
+const http = require('http');
+const socketIO = require('socket.io');
+const session = require('express-session');
 
 const User = require('./models/User');
+const ChatModule = require('./controller/ChatModule');
 
 function verify(email, password, done) {
   User.findOne({ email }, (err, user) => {
@@ -40,23 +44,63 @@ passport.deserializeUser((id, cb) => {
 });
 
 const app = express();
+const server = http.Server(app);
+const io = socketIO(server);
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(require('express-session')({
+const sessionMiddleware = session({
   secret: process.env.COOKIE_SECRET,
   resave: false,
   saveUninitialized: false,
-}));
+});
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
+
+// convert a connect middleware to a Socket.IO middleware
+const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
+
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket, next) => {
+  if (socket.request.user) {
+    next();
+  } else {
+    next(new Error('unauthorized'));
+  }
+});
 
 const authRouter = require('./routes/auth');
 const advertisementsRouter = require('./routes/advertisement');
 
 app.use('/api', authRouter);
 app.use('/api/advertisements', advertisementsRouter);
+
+io.on('connection', async (socket) => {
+  const { id } = socket;
+  console.log(`Socket connected: ${id}`);
+
+  socket.on('getHistory', async (resiverId) => {
+    const chat = await ChatModule.find([socket.request.user._id, resiverId]);
+    const history = await ChatModule.getHistory(chat._id);
+    socket.emit('chatHistory', history);
+  });
+
+  socket.on('sendMessage', async (receiver, text) => {
+    const author = socket.request.user._id;
+    const data = { author, receiver, text };
+    const message = await ChatModule.sendMessage(data);
+    socket.emit('newMessage', message.text);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Socket disconnected: ${id}`);
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 const UserDB = process.env.DB_USERNAME || 'root';
@@ -74,7 +118,7 @@ async function start() {
       useUnifiedTopology: true,
     });
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   } catch (e) {

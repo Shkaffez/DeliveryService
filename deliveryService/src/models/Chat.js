@@ -1,35 +1,23 @@
 const mongoose = require('mongoose');
 const { Schema, model } = require('mongoose');
+const message = require('./Message');
 
-const messageSchema = new Schema({
-  author: {
-    type: mongoose.ObjectId,
-    required: true,
-  },
-  sendAt: {
-    type: Date,
-    require: true,
-  },
-  text: {
-    type: String,
-    required: true,
-  },
-  readAt: {
-    type: Date,
-  },
-});
+function arrayLimit(val) {
+  return val.length === 1;
+}
 
 const chatSchema = new Schema({
   users: {
     type: [mongoose.ObjectId],
     required: true,
+    validate: arrayLimit,
   },
   createdAt: {
     type: Date,
     required: true,
   },
   messages: {
-    type: [messageSchema],
+    type: [message],
   },
 });
 
