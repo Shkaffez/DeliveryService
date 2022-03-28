@@ -1,4 +1,4 @@
-<h1 align="center">Book shop api</h1>
+<h1 align="center">Delivery service api</h1>
 
 ## Описание проекта
 Это учебное приложение, написанное по завершению блока, посвященного express, курса Нетологии backend разработка на Javascript.
@@ -12,8 +12,6 @@
   <img src="https://img.shields.io/badge/-MongoDB-brightgreen">
   <img src="https://img.shields.io/badge/-Docker-0db7ed">  
 </p>
-
-Сервисы запускаются через Docker-compose.
 
 ## Запуск проекта
 Для запуска проекта нужно выполнить комаду
