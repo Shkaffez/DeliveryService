@@ -1,8 +1,22 @@
-# DeliveryService
+<h1 align="center">Book shop api</h1>
 
-Приложение запускается через dockre-compose up.
-Модели данных лежат в файле src/models.
-Методы описаны в src/controllers.
-Роуты в src/routes.
+## Описание проекта
+Это учебное приложение, написанное по завершению блока, посвященного express, курса Нетологии backend разработка на Javascript.
+Приложение реализует API для размещения объявлений, создания и аутентификации пользователей, чата между пользователями под объявлениями.
 
-Работа с socket.io описана в index.js
+## Стек технологий
+<p align="center">
+  <img src="https://img.shields.io/badge/-NodeJS-%233c873a">
+  <img src="https://img.shields.io/badge/-express-yellow">
+  <img src="https://img.shields.io/badge/-Websocket-blue">
+  <img src="https://img.shields.io/badge/-MongoDB-brightgreen">
+  <img src="https://img.shields.io/badge/-Docker-0db7ed">  
+</p>
+
+Сервисы запускаются через Docker-compose.
+
+## Запуск проекта
+Для запуска проекта нужно выполнить комаду
+`docker-compose up`
+
+
